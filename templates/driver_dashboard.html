@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Driver Manifest</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+            padding: 40px;
+        }
+
+        .manifest-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stop-card {
+            border-left: 4px solid #3b82f6;
+            background: #f8fafc;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time {
+            font-weight: bold;
+            color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="manifest-container">
+        <h2>Fleet Commute Route Manifest (Ordered Chronologically)</h2>
+        <p>Assigned Route Flow: <b>Udupi &rarr; Kalsanka &rarr; Bantakal</b></p>
+        <a href="/logout" style="color: #ef4444;">Logout</a>
+        <hr><br>
+
+        {% for item in manifest %}
+        <div class="stop-card">
+            <div>
+                <span class="time">[{{ item.Pickup_Time }}]</span>
+                <b style="margin-left: 10px; font-size: 16px;">{{ item.Stop_Name }}</b>
+                <div style="color: #64748b; margin-top: 5px; font-size: 14px;">Commuter Name: {{ item.Name }} | Phone:
+                    {{ item.Phone }}</div>
+            </div>
+            <span
+                style="background: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">BOARDING</span>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>

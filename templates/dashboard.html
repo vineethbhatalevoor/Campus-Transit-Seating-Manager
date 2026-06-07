@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Campus Transit & Seating Manager</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --accent-blue: #3498db;
+            --success-green: #2ecc71;
+            --warning-orange: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            color: var(--accent-blue);
+            margin-bottom: 40px;
+            font-size: 20px;
+        }
+
+        .sidebar menu-item {
+            display: block;
+            padding: 12px 15px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .sidebar menu-item:hover,
+        .sidebar .active {
+            background: #334155;
+            color: white;
+        }
+
+        .main-content {
+            flex-1: 1;
+            padding: 40px;
+            overflow-y: auto;
+            width: calc(100% - 260px);
+        }
+
+        .header-title {
+            margin-bottom: 30px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border-left: 5px solid var(--accent-blue);
+        }
+
+        .metric-card h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .metric-card p {
+            margin: 10px 0 0 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .student-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge.paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .student-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .student-usn {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>TransitManager.</h2>
+        <div class="active menu-item">Dashboard</div>
+        <div class="menu-item">Manage Registrations</div>
+        <div class="menu-item">Route Manifests</div>
+        <div class="menu-item">Fee Portal</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-title">
+            <h1>Admin Infrastructure Control</h1>
+            <p style="color: #64748b;">Real-time asset optimization for SMVITM transit operations.</p>
+        </div>
+
+        <div class="metrics-grid" id="metricsContainer">
+            <div class="metric-card">
+                <h3>Total Manifested</h3>
+                <p id="m-students">-</p>
+            </div>
+            <div class="metric-card" style="border-left-color: var(--success-green);">
+                <h3>Gross Revenue Run-rate</h3>
+                <p id="m-revenue">-</p>
+            </div>
+            <div class="metric-card" style="border-left-color: var(--warning-orange);">
+                <h3>Active Routes</h3>
+                <p id="m-routes">-</p>
+            </div>
+        </div>
+
+        <h2>Active Commuter Profiles</h2>
+        <div class="student-grid" id="studentCardsContainer">
+        </div>
+    </div>
+
+    <script>
+        // Fetch and populate metrics automatically on interface load
+        async function loadDashboardData() {
+            const metricsRes = await fetch('/api/metrics');
+            const metrics = await metricsRes.json();
+            document.getElementById('m-students').innerText = metrics.total_students;
+            document.getElementById('m-revenue').innerText = metrics.revenue;
+            document.getElementById('m-routes').innerText = metrics.total_routes;
+
+            const studentsRes = await fetch('/api/students');
+            const students = await studentsRes.json();
+            const cardsContainer = document.getElementById('studentCardsContainer');
+            cardsContainer.innerHTML = '';
+
+            students.forEach(student => {
+                const badgeClass = student.Fee_Status.toLowerCase() === 'paid' ? 'paid' : 'pending';
+                cardsContainer.innerHTML += `
+                    <div class="student-card">
+                        <span class="badge ${badgeClass}">${student.Fee_Status}</span>
+                        <div class="student-name">${student.Name}</div>
+                        <div class="student-usn">${student.USN} (${student.Department})</div>
+                        <div class="info-row">
+                            <span class="info-label">Assigned Fleet:</span>
+                            <span>${student.Plate_Number}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Allocated Stop:</span>
+                            <span>${student.Stop_Name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Contact Primary:</span>
+                            <span>${student.Phone}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.onload = loadDashboardData;
+    </script>
+</body>
+
+</html>

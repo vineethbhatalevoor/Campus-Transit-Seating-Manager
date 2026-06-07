@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Infrastructure Control</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+        }
+
+        .sidebar h3 {
+            color: #3b82f6;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            color: #cbd5e1;
+        }
+
+        .sidebar-menu li:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            padding: 40px;
+            margin-left: 260px;
+        }
+
+        .panel-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        input,
+        select {
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-sec {
+            background: #64748b;
+        }
+
+        .btn-sec:hover {
+            background: #475569;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #334155;
+            color: white;
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            width: 850px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .search-result-box {
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .inline-edit-box {
+            display: flex;
+            gap: 5px;
+            width: 130px;
+        }
+
+        .inline-edit-box input {
+            padding: 5px;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h3>SMVITM Control</h3>
+        <p style="color: #64748b; margin-top:-15px;">Global Admin Hub</p>
+        <ul class="sidebar-menu">
+            <li onclick="location.reload()">Dashboard Overview</li>
+            <li onclick="openFleetModal()">View Fleet & Stops Infrastructure</li>
+        </ul>
+        <br><br>
+        <a href="/logout" style="color: #f87171; text-decoration: none; font-weight:600; padding-left:15px;">Exit
+            Console</a>
+    </div>
+
+    <div class="main">
+        <h1>Global Operational Infrastructure Control</h1>
+        <p style="color: #64748b;">Manage routes, process student logistics, and expand fleet profiles.</p>
+
+        <div class="panel-card">
+            <h3>Instant Student Registry Lookup</h3>
+            <div class="search-container">
+                <input type="text" id="searchUsn" placeholder="Enter Student USN ID (e.g., 4MW24CS181)">
+                <button class="btn" onclick="executeUsnSearch()">Query Database</button>
+                <button class="btn btn-sec" onclick="clearSearchLookup()">Reset</button>
+            </div>
+
+            <div class="search-result-box" id="searchResultBox">
+                <h4 style="margin-top: 0; color: #1e40af;">Profile Match Discovered:</h4>
+                <div id="searchProfileDetails" class="grid-inputs" style="font-size: 15px; line-height: 1.6;"></div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h3>Add New Student Transit Registration</h3>
+            <form id="regForm" onsubmit="handleFormSubmit(event)">
+                <div class="grid-inputs">
+                    <input type="text" name="usn" id="usn" placeholder="Student USN" required>
+                    <input type="text" name="name" id="name" placeholder="Full Name" required>
+                    <input type="text" name="dept" placeholder="Department" required>
+                    <input type="text" name="phone" id="phone" placeholder="10-Digit Contact" required>
+
+                    <select name="route_id" id="route_id" onchange="updateFormStops(this.value)">
+                        <option value="1">Route 1 (Udupi-Bantakal)</option>
+                        <option value="2">Route 2 (Manipal-Bantakal)</option>
+                    </select>
+
+                    <select name="stop_id" id="stop_id">
+                    </select>
+
+                    <select name="bus_id" id="bus_id">
+                    </select>
+
+                    <input type="number" name="semester" placeholder="Current Semester" min="1" max="8" required>
+                    <select name="fee_status">
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div><br>
+                <button type="submit" class="btn">Process Registration</button>
+            </form>
+        </div>
+
+        <h3>Active Commuter Routing Manifest</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>USN</th>
+                    <th>Fleet Plate</th>
+                    <th>Assigned Stop</th>
+                    <th>Fees Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="regTableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="modal" id="fleetModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeFleetModal()">&times;</span>
+            <h2>Active System Infrastructure Profiles</h2>
+            <hr><br>
+            <h3>Operational Bus Fleet & Real-Time Capacity Configuration</h3>
+            <table style="margin-bottom: 30px;">
+                <thead>
+                    <tr>
+                        <th>Bus ID</th>
+                        <th>Plate Number</th>
+                        <th>Operator Name</th>
+                        <th>Route</th>
+                        <th>Occupancy Check</th>
+                        <th>Modify Max Capacity</th>
+                    </tr>
+                </thead>
+                <tbody id="modalFleetBody"></tbody>
+            </table>
+
+            <h3>System Mapping Route Intermediate Stops</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Associated Route ID</th>
+                        <th>Intermediate Stop Location</th>
+                        <th>Scheduled Pickup Timing</th>
+                    </tr>
+                </thead>
+                <tbody id="modalStopsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let globalFleetData = { buses: [], stops: [] };
+
+        async function fetchSystemMetadata() {
+            try {
+                const res = await fetch('/api/get_fleet_details');
+                globalFleetData = await res.json();
+                updateFormStops(document.getElementById('route_id').value);
+            } catch (err) {
+                console.error("Metadata sync mismatch:", err);
+            }
+        }
+
+        function updateFormStops(routeId) {
+            const stopSelect = document.getElementById('stop_id');
+            const busSelect = document.getElementById('bus_id');
+
+            stopSelect.innerHTML = '';
+            busSelect.innerHTML = '';
+
+            if (globalFleetData.stops) {
+                const filteredStops = globalFleetData.stops.filter(s => (s.route_id == routeId || s.Route_ID == routeId));
+                filteredStops.forEach(s => {
+                    const id = s.stop_id !== undefined ? s.stop_id : s.Stop_ID;
+                    const name = s.stop_name !== undefined ? s.stop_name : s.Stop_Name;
+                    const time = s.pickup_time !== undefined ? s.pickup_time : s.Pickup_Time;
+                    stopSelect.innerHTML += `<option value="${id}">${name} (${time})</option>`;
+                });
+            }
+
+            if (globalFleetData.buses) {
+                const filteredBuses = globalFleetData.buses.filter(b => {
+                    const rName = b.route_name || b.Route_Name || '';
+                    return rName.includes(routeId == 1 ? 'Udupi' : 'Manipal');
+                });
+                filteredBuses.forEach(b => {
+                    const id = b.bus_id !== undefined ? b.bus_id : b.Bus_ID;
+                    const plate = b.plate_number !== undefined ? b.plate_number : b.Plate_Number;
+                    busSelect.innerHTML += `<option value="${id}">Bus ${id} (${plate})</option>`;
+                });
+            }
+        }
+
+        async function executeUsnSearch() {
+            const targetUsn = document.getElementById('searchUsn').value.trim();
+            if (!targetUsn) { alert("Please provide a valid USN parameter."); return; }
+
+            try {
+                const res = await fetch(`/api/search_student/${targetUsn}`);
+                const result = await res.json();
+
+                const displayBox = document.getElementById('searchResultBox');
+                const detailsGrid = document.getElementById('searchProfileDetails');
+
+                if (result.status === 'success') {
+                    displayBox.style.display = 'block';
+                    const s = result.data;
+                    detailsGrid.innerHTML = `
+                        <div><b>Name:</b> ${s.Name}</div><div><b>USN Reference:</b> ${s.USN}</div>
+                        <div><b>Department:</b> ${s.Department}</div><div><b>Mobile Connection:</b> ${s.Phone}</div>
+                        <div><b>Assigned Vehicle:</b> ${s.Plate_Number}</div><div><b>Fleet Captain:</b> ${s.Driver_Name}</div>
+                        <div><b>Transit Stop Point:</b> ${s.Stop_Name}</div><div><b>Current Term:</b> Sem ${s.Semester}</div>
+                        <div>
+                            <b>Account Balance:</b>
+                            <select id="updateFeeSelector" style="width:110px; padding:4px; display:inline-block; font-size:13px;" onchange="executeFeeUpdate(${s.Registration_ID}, this.value)">
+                                <option value="Paid" ${s.Fee_Status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Pending" ${s.Fee_Status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            </select>
+                        </div>
+                        <div><button class="btn btn-danger" style="padding:6px 12px; font-size:13px;" onclick="deleteReg(${s.Registration_ID})">Drop Student Record</button></div>
+                    `;
+                } else {
+                    alert(result.message);
+                    clearSearchLookup();
+                }
+            } catch (err) {
+                console.error("Search failed:", err);
+            }
+        }
+
+        async function executeFeeUpdate(regId, newStatus) {
+            const formData = new FormData();
+            formData.append('registration_id', regId);
+            formData.append('fee_status', newStatus);
+
+            const res = await fetch('/api/update_fee', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.message);
+            loadTable();
+        }
+
+        async function saveNewCapacity(busId) {
+            const newCap = document.getElementById(`capInput_${busId}`).value;
+            if (!newCap || newCap <= 0) { alert("Enter a valid seating configuration size."); return; }
+
+            const formData = new FormData();
+            formData.append('bus_id', busId);
+            formData.append('capacity', newCap);
+
+            const res = await fetch('/api/update_bus_capacity', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.message);
+            await fetchSystemMetadata();
+        }
+
+        async function openFleetModal() {
+            document.getElementById('fleetModal').style.display = 'flex';
+            const res = await fetch('/api/get_fleet_details');
+            const data = await res.json();
+
+            const fleetBody = document.getElementById('modalFleetBody');
+            fleetBody.innerHTML = '';
+
+            if (data.buses && data.buses.length > 0) {
+                data.buses.forEach(b => {
+                    const id = b.bus_id !== undefined ? b.bus_id : b.Bus_ID;
+                    const plate = b.plate_number !== undefined ? b.plate_number : b.Plate_Number;
+                    const driver = b.driver_name !== undefined ? b.driver_name : b.Driver_Name;
+                    const route = b.route_name !== undefined ? b.route_name : b.Route_Name;
+                    const current = b.current_occupancy !== undefined ? b.current_occupancy : b.Current_Occupancy;
+                    const cap = b.capacity !== undefined ? b.capacity : b.Capacity;
+
+                    const statusColor = current >= cap ? '#ef4444' : '#16a34a';
+                    fleetBody.innerHTML += `<tr>
+                        <td><b>${id}</b></td>
+                        <td>${plate}</td>
+                        <td>${driver}</td>
+                        <td>${route || 'Unassigned'}</td>
+                        <td><span style="color:${statusColor}; font-weight:bold;">${current} / ${cap} Seats Used</span></td>
+                        <td>
+                            <div class="inline-edit-box">
+                                <input type="number" id="capInput_${id}" value="${cap}" style="width: 50px;">
+                                <button class="btn" style="padding:4px 8px; font-size:12px; background:#10b981;" onclick="saveNewCapacity(${id})">Save</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            const stopsBody = document.getElementById('modalStopsBody');
+            stopsBody.innerHTML = '';
+            if (data.stops && data.stops.length > 0) {
+                data.stops.forEach(s => {
+                    const rId = s.route_id !== undefined ? s.route_id : s.Route_ID;
+                    const name = s.stop_name !== undefined ? s.stop_name : s.Stop_Name;
+                    const time = s.pickup_time !== undefined ? s.pickup_time : s.Pickup_Time;
+                    stopsBody.innerHTML += `<tr>
+                        <td>Route Path Block ${rId}</td>
+                        <td>${name}</td>
+                        <td><code>${time}</code></td>
+                    </tr>`;
+                });
+            }
+        }
+
+        function closeFleetModal() { document.getElementById('fleetModal').style.display = 'none'; }
+
+        function clearSearchLookup() {
+            document.getElementById('searchResultBox').style.display = 'none';
+            document.getElementById('searchUsn').value = '';
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(document.getElementById('regForm'));
+            const res = await fetch('/api/add_student', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.message);
+            if (data.status === 'success') {
+                document.getElementById('regForm').reset();
+                await fetchSystemMetadata();
+                loadTable();
+            }
+        }
+
+        async function loadTable() {
+            try {
+                const res = await fetch('/api/get_registrations');
+                const registrations = await res.json();
+                const tbody = document.getElementById('regTableBody');
+                tbody.innerHTML = '';
+                registrations.forEach(r => {
+                    tbody.innerHTML += `<tr>
+                        <td>${r.Name}</td><td>${r.USN}</td><td>${r.Plate_Number}</td><td>${r.Stop_Name}</td>
+                        <td><b style="color: ${r.Fee_Status === 'Paid' ? '#16a34a' : '#d97706'}">${r.Fee_Status}</b></td>
+                        <td><button class="btn btn-danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteReg(${r.Registration_ID})">Drop</button></td>
+                </tr>`;
+                });
+            } catch (err) {
+                console.error("Table rendering error:", err);
+            }
+        }
+
+        async function deleteReg(id) {
+            if (confirm("Confirm dropping this commuter transit assignment line?")) {
+                await fetch(`/api/remove_registration/${id}`, { method: 'DELETE' });
+                await fetchSystemMetadata();
+                loadTable();
+                clearSearchLookup();
+            }
+        }
+
+        window.onload = async () => {
+            await fetchSystemMetadata();
+            loadTable();
+        };
+    </script>
+</body>
+
+</html>

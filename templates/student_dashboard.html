@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Transit Pass</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .pass-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 16px;
+            width: 400px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pass-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .label {
+            color: #94a3b8;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .paid {
+            background: #065f46;
+            color: #34d399;
+        }
+
+        .pending {
+            background: #78350f;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pass-card">
+        <div class="header">
+            <div>
+                <h3 style="margin: 0;">SMVITM BUS PASS</h3>
+                <small style="color: #64748b;">Academic Session Year 2025-26</small>
+            </div>
+            <span class="status {% if p.Fee_Status == 'Paid' %}paid{% else %}pending{% endif %}">{{ p.Fee_Status
+                }}</span>
+        </div>
+        <div class="row"><span class="label">Name:</span><span>{{ p.Name }}</span></div>
+        <div class="row"><span class="label">USN ID:</span><span>{{ p.USN }}</span></div>
+        <div class="row"><span class="label">Fleet Assigned:</span><span>{{ p.Plate_Number }}</span></div>
+        <div class="row"><span class="label">Driver Name:</span><span>{{ p.Driver_Name }}</span></div>
+        <div class="row"><span class="label">Boarding Stop:</span><span style="color: #3b82f6; font-weight: bold;">{{
+                p.Stop_Name }}</span></div>
+        <div class="row"><span class="label">Expected Time:</span><span>{{ p.Pickup_Time }}</span></div>
+        <br>
+        <div style="text-align: center;"><a href="/logout"
+                style="color: #f87171; text-decoration: none; font-size: 14px;">Sign Out Profile</a></div>
+    </div>
+</body>
+
+</html>
